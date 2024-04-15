@@ -1,10 +1,10 @@
 import csv, os, time
 import serial, serial.tools.list_ports
 
-variaveis = ["H", "V1", "A1", "P1", "V2", "A2", "P2"]
+variaveis = ["HORA", "mV", "mA", "mW", "mV", "mA", "mW"]
 digits = 16 # Quantos digitos vamos alinhar
 
-comport = "COM3" # Altere para a porta desejada
+comport = "/dev/ttyUSB0" # Altere para a porta desejada
 baud = 9600 
 
 def printtable(data):
@@ -15,7 +15,7 @@ def printtable(data):
 
     print('|', end = '')
     for d in data:
-        pos = data.index(d)     
+        position = data.index(d)     
 
         divisor = ','
         
@@ -38,7 +38,7 @@ def printtable(data):
             strformatado = prefix + strtoprint + sufix
              
 
-        if pos >= last: # Quebrar a linha
+        if position >= last: # Quebrar a linha
             divisor = '|\n'
 
         # Flush força imprimir o buffer na hora.
@@ -100,11 +100,13 @@ def listenCOMPORT():
         print(f"[ERROR] Erro ao abrir a porta serial: {e}")
         return
     
-    while True:
+    pong = False
+    while not pong:
         handshake = ser.readline().decode().strip()
-        if handshake == "Começar123":
+        
+        if handshake.lower() == "Comecar123".lower():
             print("[INFO] Iniciando recebimento de dados.")
-            break 
+            pong = True
 
     loadCSV()
     
@@ -112,6 +114,9 @@ def listenCOMPORT():
         while True:
             # Recebe e processa os dados
             dados = ser.readline().decode().strip().split(',')
+
+            dados.insert(0, time.strftime("%H:%M:%S", time.localtime(time.time())))
+
             saveToCSV(dados)
             printtable(dados)
 
