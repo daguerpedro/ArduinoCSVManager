@@ -1,11 +1,16 @@
-import csv, os, random
-from time import sleep
-import time
+import csv, os, time
+import serial, serial.tools.list_ports
 
 variaveis = ["H", "V1", "A1", "P1", "V2", "A2", "P2"]
-digits = 18 #Quantos digitos vamos alinhar
+digits = 16 # Quantos digitos vamos alinhar
+
+comport = "COM3" # Altere para a porta desejada
+baud = 9600 
 
 def printtable(data):
+    if(len(data) == 0):
+        return
+     
     last = (len(data) - 1)
 
     print('|', end = '')
@@ -44,7 +49,10 @@ def printtable(data):
 # Isso é uma função pois toda vez que for guardar algo na tabela, irá ler essa função que por vez separa as 
 # tabelas por dias, semanas ou meses (Ajustável via código), assim como imprime o cabeçalho nela caso ela ainda não exista.
 def arquivoCSV() -> str:
-    c = f'tabela{time.strftime("_%d_%m_%Y", time.localtime(time.time()))}.csv' # Separar por dias.
+    mes_ano = time.strftime("%m_%Y", time.localtime(time.time()))
+    semana = time.strftime("%W", time.localtime(time.time()))
+
+    c = f'{mes_ano}_semana{semana}.csv' # Separar por dias.
     if not os.path.exists(c):
         try:
             with open(c, 'a', newline='\n') as file: # Iremos adicionar algo na última linha, e não substiur o arquivo inteiro.
@@ -56,12 +64,14 @@ def arquivoCSV() -> str:
             pass
     return c
 
-def saveToCSV(dados):
+def saveToCSV(data):
+    if(len(data) == 0):
+        return
     try:
         with open(arquivoCSV(), 'a', newline='\n') as file: # Iremos adicionar algo na última linha, e não substiur o arquivo inteiro.
             tabelacsv = csv.writer(file)
             if not file.closed:
-                tabelacsv.writerow(dados)
+                tabelacsv.writerow(data)
                 file.close()
             else:
                 print(f"[AVISO]\nO arquivo {csvFile} estava fechado enquanto tentei salvar dados!\n")
@@ -70,7 +80,7 @@ def saveToCSV(dados):
         print(f"[ERRO]\nOcorreu um erro enquanto tentava salvar a tabela!\n{e}\n")
         pass
 
-def load():
+def loadCSV():
     try:
         with open(arquivoCSV(), 'r', newline='\n') as file:
             tabelacsv = csv.reader(file)
@@ -82,20 +92,60 @@ def load():
     except (OSError, Exception) as e:
         print(f"[ERRO]\nOcorreu um erro enquanto tentava carregar a tabela que já existia!\n{e}\n")
         pass
+
+def listenCOMPORT():
+    try:
+        ser = serial.Serial(comport, baud, timeout=1)
+    except serial.SerialException as e:
+        print(f"[ERROR] Erro ao abrir a porta serial: {e}")
+        return
     
-def read():
-    for i in range(0, 15): # ADICIONAR COMUNICACAO SERIAL:
-        data = [time.strftime("%H:%M:%S;%d/%m", time.localtime(time.time())), random.randint(1, 255), random.randint(1, 255), random.randint(1, 255), random.randint(1, 255), random.randint(1, 255), random.randint(1, 255)]
-        saveToCSV(data)
-        printtable(data)
-        sleep(.5)
+    while True:
+        handshake = ser.readline().decode().strip()
+        if handshake == "Começar123":
+            print("[INFO] Iniciando recebimento de dados.")
+            break 
+
+    loadCSV()
+    
+    try:
+        while True:
+            # Recebe e processa os dados
+            dados = ser.readline().decode().strip().split(',')
+            saveToCSV(dados)
+            printtable(dados)
+
+    except Exception as e:
+        print("[ERRO DE COMUNICAÇÃO] {e}")
+        pass
+    finally:
+        ser.close()
+
+
+def listCOMPORTS():
+    print(f"Listando portas disponíveis: ")
+    for i in serial.tools.list_ports.comports():
+        print(f"   ({(serial.tools.list_ports.comports().index(i)) + 1}) {i}")
+
+# O CODIGO A SEGUIR ESTA DESATIVADO E PODE SER USADO PARA SUBSTITUIR A NECESSIDADE DE EDITAR COMPORT TODA VEZ QUE ABRE, NO ENTANTO FARIA NECESSÁRIO DIGITAR UM NÚMERO NO CONSOLE 
+"""
+    port = -1
+
+    while port == -1 or (port > (len(ports.comports())-1)):
+        try:
+            port = int(input(f"Digite o numero da porta desejada: "))
+        except (ValueError, Exception):
+            pass
+    
+    comport += port
+"""
 
 def init():
     try:
-        load()
-        read()
+        listCOMPORTS()
+        listenCOMPORT()
     except KeyboardInterrupt:
-        print("Programa finalizado.")
+        print("\nPrograma finalizado.")
 
 if __name__ == "__main__":
     init()
