@@ -15,8 +15,8 @@ def printtable(data):
         divisor = ','
         
         stringsize = len(str(d)) #Tamanho do dado recebido
-        strtoprint = str(d) #Dodo formatado como string
-        strformatado = strtoprint
+        strtoprint = str(d) #Dado formatado como string
+        strformatado = strtoprint # Temporario, se o tamanho for >= digitos de alinhamento é so imprimir essa variavel
 
         if stringsize < digits: #Precisa alinhar
             missing = digits - stringsize #Quantos faltam para alinhar com 7digitos
@@ -27,19 +27,24 @@ def printtable(data):
                 prefix += ' '
                 sufix += ' '
 
-            if not (missing % 2) == 0:
+            if not (missing % 2) == 0: # Se o tamanho do dado nao for par, vamos adicionar um espaço para alinhar corretamente
                 sufix += ' '
 
             strformatado = prefix + strtoprint + sufix
              
 
-        if pos >= last:
+        if pos >= last: # Quebrar a linha
             divisor = '|\n'
 
-        print(strformatado, end = divisor, flush=True)
+        # Flush força imprimir o buffer na hora.
+        # Apenas usei para testar quando nao tinha o comport
+        # Caso tenha dúvidas: https://pt.stackoverflow.com/questions/291779/o-que-%C3%A9-o-par%C3%A2metro-flush-da-fun%C3%A7%C3%A3o-print
+        print(strformatado, end = divisor)
 
+# Isso é uma função pois toda vez que for guardar algo na tabela, irá ler essa função que por vez separa as 
+# tabelas por dias, semanas ou meses (Ajustável via código), assim como imprime o cabeçalho nela caso ela ainda não exista.
 def arquivoCSV() -> str:
-    c = f'tabela{time.strftime("_%d_%m_%Y", time.localtime(time.time()))}.csv'
+    c = f'tabela{time.strftime("_%d_%m_%Y", time.localtime(time.time()))}.csv' # Separar por dias.
     if not os.path.exists(c):
         try:
             with open(c, 'a', newline='\n') as file: # Iremos adicionar algo na última linha, e não substiur o arquivo inteiro.
