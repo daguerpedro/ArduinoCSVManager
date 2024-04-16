@@ -1,7 +1,7 @@
 import csv, os, time
 import serial
 
-variaveis = ["HORA", "mV", "mA", "mW", "mV", "mA", "mW"]
+variaveis = ["HORA", "mV", "mA", "mW", "mV", "mA", "mW", "°C"]
 digits = 10 # Quantos digitos vamos alinhar a tabela no console
 
 comport = "COM3" # Altere para a porta desejada
