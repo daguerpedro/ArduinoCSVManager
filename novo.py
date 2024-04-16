@@ -1,11 +1,11 @@
 import csv, os, time
-import serial, serial.tools.list_ports
+import serial
 
 variaveis = ["HORA", "mV", "mA", "mW", "mV", "mA", "mW"]
-digits = 16 # Quantos digitos vamos alinhar
+digits = 10 # Quantos digitos vamos alinhar a tabela no console
 
-comport = "/dev/ttyUSB0" # Altere para a porta desejada
-baud = 9600 
+comport = "COM3" # Altere para a porta desejada
+baud = 9600 # Frequência desejada
 
 def printtable(data):
     if(len(data) == 0):
@@ -14,8 +14,10 @@ def printtable(data):
     last = (len(data) - 1)
 
     print('|', end = '')
+
+    position = -1
     for d in data:
-        position = data.index(d)     
+        position += 1    
 
         divisor = ','
         
@@ -36,7 +38,6 @@ def printtable(data):
                 sufix += ' '
 
             strformatado = prefix + strtoprint + sufix
-             
 
         if position >= last: # Quebrar a linha
             divisor = '|\n'
@@ -74,7 +75,7 @@ def saveToCSV(data):
                 tabelacsv.writerow(data)
                 file.close()
             else:
-                print(f"[AVISO]\nO arquivo {csvFile} estava fechado enquanto tentei salvar dados!\n")
+                print("[AVISO]\nO arquivo estava fechado enquanto tentei salvar dados!\n")
                 
     except (OSError, Exception) as e:
         print(f"[ERRO]\nOcorreu um erro enquanto tentava salvar a tabela!\n{e}\n")
@@ -100,13 +101,15 @@ def listenCOMPORT():
         print(f"[ERROR] Erro ao abrir a porta serial: {e}")
         return
     
-    pong = False
-    while not pong:
-        handshake = ser.readline().decode().strip()
-        
-        if handshake.lower() == "Comecar123".lower():
-            print("[INFO] Iniciando recebimento de dados.")
-            pong = True
+    while True:
+        try:
+            handshake = ser.readline().decode().strip()
+
+            if handshake.lower() == "Comecar123".lower():
+                print("[INFO] Iniciando recebimento de dados.")
+                break
+        except UnicodeDecodeError:
+            pass
 
     loadCSV()
     
@@ -114,11 +117,10 @@ def listenCOMPORT():
         while True:
             # Recebe e processa os dados
             dados = ser.readline().decode().strip().split(',')
-
-            dados.insert(0, time.strftime("%H:%M:%S", time.localtime(time.time())))
-
-            saveToCSV(dados)
-            printtable(dados)
+            if(not dados[0] == ''):
+                dados.insert(0, time.strftime("%H:%M:%S", time.localtime(time.time())))
+                saveToCSV(dados)
+                printtable(dados)
 
     except Exception as e:
         print("[ERRO DE COMUNICAÇÃO] {e}")
@@ -126,28 +128,8 @@ def listenCOMPORT():
     finally:
         ser.close()
 
-
-def listCOMPORTS():
-    print(f"Listando portas disponíveis: ")
-    for i in serial.tools.list_ports.comports():
-        print(f"   ({(serial.tools.list_ports.comports().index(i)) + 1}) {i}")
-
-# O CODIGO A SEGUIR ESTA DESATIVADO E PODE SER USADO PARA SUBSTITUIR A NECESSIDADE DE EDITAR COMPORT TODA VEZ QUE ABRE, NO ENTANTO FARIA NECESSÁRIO DIGITAR UM NÚMERO NO CONSOLE 
-"""
-    port = -1
-
-    while port == -1 or (port > (len(ports.comports())-1)):
-        try:
-            port = int(input(f"Digite o numero da porta desejada: "))
-        except (ValueError, Exception):
-            pass
-    
-    comport += port
-"""
-
 def init():
     try:
-        listCOMPORTS()
         listenCOMPORT()
     except KeyboardInterrupt:
         print("\nPrograma finalizado.")
