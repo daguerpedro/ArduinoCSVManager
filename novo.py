@@ -96,7 +96,7 @@ def loadCSV():
 
 def listenCOMPORT():
     try:
-        ser = serial.Serial(comport, baud, timeout=1)
+        ser = serial.Serial(comport, baud, timeout=None)
     except serial.SerialException as e:
         print(f"[ERROR] Erro ao abrir a porta serial: {e}")
         return
@@ -123,7 +123,7 @@ def listenCOMPORT():
                 printtable(dados)
 
     except Exception as e:
-        print("[ERRO DE COMUNICAÇÃO] {e}")
+        print(f"[ERRO DE COMUNICAÇÃO] {e}")
         pass
     finally:
         ser.close()
