@@ -42,9 +42,7 @@ def printtable(data):
         if position >= last: # Quebrar a linha
             divisor = '|\n'
  
-        # Flush força imprimir o buffer na hora.
-        # Apenas usei para testar quando nao tinha o comport
-        # Caso tenha dúvidas: https://pt.stackoverflow.com/questions/291779/o-que-%C3%A9-o-par%C3%A2metro-flush-da-fun%C3%A7%C3%A3o-print
+
         print(strformatado, end = divisor)
  
 # Isso é uma função pois toda vez que for guardar algo na tabela, irá ler essa função que por vez separa as 
@@ -60,8 +58,8 @@ def arquivoCSV() -> str:
                 tabelacsv = csv.writer(file)
                 tabelacsv.writerow(variaveis)
                 file.close()          
-        except (OSError, Exception) as e:
-            print(f"[ERRO]\nOcorreu um erro enquanto tentava salvar o cabeçalho na tabela nova: {c}!\n{e}\n")
+        except (Exception) as e:
+            print(f"[ERRO] Ocorreu um erro enquanto tentava salvar o cabeçalho na tabela nova: {c}!\n{e}\n")
             pass
     return c
  
@@ -77,8 +75,8 @@ def saveToCSV(data):
             else:
                 print("[AVISO]\nO arquivo estava fechado enquanto tentei salvar dados!\n")
  
-    except (OSError, Exception) as e:
-        print(f"[ERRO]\nOcorreu um erro enquanto tentava salvar a tabela!\n{e}\n")
+    except (Exception) as e:
+        print(f"[ERRO] Ocorreu um erro enquanto tentava salvar a tabela!\nDado a ser salvo: \"{data}\" \nErro: {e}\n")
         pass
  
 def loadCSV():
@@ -90,8 +88,8 @@ def loadCSV():
                 printtable(linha)
  
             file.close()
-    except (OSError, Exception) as e:
-        print(f"[ERRO]\nOcorreu um erro enquanto tentava carregar a tabela que já existia!\n{e}\n")
+    except (Exception) as e:
+        print(f"[ERRO] Ocorreu um erro enquanto tentava carregar a tabela que já existia!\n{e}\n")
         pass
  
 def listenCOMPORT():
