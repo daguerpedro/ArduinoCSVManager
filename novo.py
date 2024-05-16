@@ -59,7 +59,7 @@ def arquivoCSV() -> str:
                 tabelacsv.writerow(variaveis)
                 file.close()          
         except (Exception) as e:
-            print(f"[ERRO] Ocorreu um erro enquanto tentava salvar o cabeçalho na tabela nova: {c}!\n{e}\n")
+            print(f"[ERRO 5] Ocorreu um erro enquanto tentava salvar o cabeçalho na tabela nova: {c}!\n{e}\n")
             pass
     return c
  
@@ -76,7 +76,7 @@ def saveToCSV(data):
                 print("[AVISO]\nO arquivo estava fechado enquanto tentei salvar dados!\n")
  
     except (Exception) as e:
-        print(f"[ERRO] Ocorreu um erro enquanto tentava salvar a tabela!\nDado a ser salvo: \"{data}\" \nErro: {e}\n")
+        print(f"[ERRO 4] Ocorreu um erro enquanto tentava salvar a tabela!\nDado a ser salvo: \"{data}\" \nErro: {e}\n")
         pass
  
 def loadCSV():
@@ -89,14 +89,14 @@ def loadCSV():
  
             file.close()
     except (Exception) as e:
-        print(f"[ERRO] Ocorreu um erro enquanto tentava carregar a tabela que já existia!\n{e}\n")
+        print(f"[ERRO 3] Ocorreu um erro enquanto tentava carregar a tabela que já existia!\n{e}\n")
         pass
  
 def listenCOMPORT():
     try:
         ser = serial.Serial(comport, baud, timeout=None)
     except serial.SerialException as e:
-        print(f"[ERROR] Erro ao abrir a porta serial: {e}")
+        print(f"[ERRO 1] Erro ao abrir a porta serial: {e}")
         return
  
     while True:
@@ -123,7 +123,7 @@ def listenCOMPORT():
                 printtable(dados)
  
     except Exception as e:
-        print(f"[ERRO DE COMUNICAÇÃO] {e}")
+        print(f"[ERRO 2] Erro de comunicação: {e}")
         pass
     finally:
         ser.close()
