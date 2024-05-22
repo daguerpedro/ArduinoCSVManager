@@ -1,50 +1,18 @@
 import csv, os, time
 import serial
- 
-variaveis = ["DIA", "HORA", "mV", "mA", "mW", "mV", "mA", "mW", "°C"]
-digits = 10 # Quantos digitos vamos alinhar a tabela no console
- 
+
+from pytable import PyTable
+
+table = PyTable()
+
+variaveis = ["DIA", "HORA", "mV (MEC1)", "mA (MEC1)", "mW (MEC1)", "mV (MEC2)", "mA (MEC2)", "mW (MEC2)", "°C"]
+
+table.alignmentDigits = 12 # Quantos digitos vamos alinhar a tabela no console
+
 comport = "COM3" # Altere para a porta desejada
 baud = 9600 # Frequência desejada
- 
-def printtable(data):
-    if(len(data) == 0):
-        return
- 
-    last = (len(data) - 1)
- 
-    print('|', end = '')
- 
-    position = -1
-    for d in data:
-        position += 1    
- 
-        divisor = ','
- 
-        stringsize = len(str(d)) #Tamanho do dado recebido
-        strtoprint = str(d) #Dado formatado como string
-        strformatado = strtoprint # Temporario, se o tamanho for >= digitos de alinhamento é so imprimir essa variavel
- 
-        if stringsize < digits: #Precisa alinhar
-            missing = digits - stringsize #Quantos faltam para alinhar com 7digitos
- 
-            prefix = sufix = ''
- 
-            for i in range(0, missing // 2):
-                prefix += ' '
-                sufix += ' '
- 
-            if not (missing % 2) == 0: # Se o tamanho do dado nao for par, vamos adicionar um espaço para alinhar corretamente
-                sufix += ' '
- 
-            strformatado = prefix + strtoprint + sufix
- 
-        if position >= last: # Quebrar a linha
-            divisor = '|\n'
- 
 
-        print(strformatado, end = divisor)
- 
+
 # Isso é uma função pois toda vez que for guardar algo na tabela, irá ler essa função que por vez separa as 
 # tabelas por dias, semanas ou meses (Ajustável via código), assim como imprime o cabeçalho nela caso ela ainda não exista.
 def arquivoCSV() -> str:
@@ -85,7 +53,7 @@ def loadCSV():
             tabelacsv = csv.reader(file)
  
             for linha in tabelacsv:
-                printtable(linha)
+                table.addRow(linha)
  
             file.close()
     except (Exception) as e:
@@ -120,7 +88,7 @@ def listenCOMPORT():
                 dados.insert(0, time.strftime("%d/%m/%Y", time.localtime(time.time())))
  
                 saveToCSV(dados)
-                printtable(dados)
+                table.addRow(dados)
  
     except Exception as e:
         print(f"[ERRO 2] Erro de comunicação: {e}")
