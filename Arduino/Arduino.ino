@@ -1,8 +1,10 @@
-#define ANALOGICO_R1 A0 //Pino analógico conectado com o resistor 1
-#define ANALOGICO_R2 A1 //Pino analógico conectado com o resistor 2
+#define ANALOGICO_R1 A0 //Pino analógico do ADS conectado com o resistor 1
+#define ANALOGICO_R2 A1 //Pino analógico do ADS conectado com o resistor 2
 
 #define RESISTOR1 10 //O valor em Ohms do resistor conectado com o ANALOGICO_R1 
 #define RESISTOR2 10 //O valor em Ohms do resistor conectado com o ANALOGICO_R2 
+
+#define ARREDONDAMENTO 4 //NUMERO DE CASAS DECIMAIS
 
 #define ONE_WIRE_BUS 7 //Pino digital conectado com o sensor de temperatura DS18B20
 
@@ -14,7 +16,7 @@
 #include "ADS1X15.h" // Incluir a biblioteca do ADS
 // Construtor do ADS, o parametro é o valor do endereço I2C, configurado pelo pino ADDR na placa do ADS1115.
 // https://github.com/RobTillaart/ADS1X15?tab=readme-ov-file#i2c-address
-ADS1115 ADS(0x48);
+ADS1115 ADS(0x48); // 0x48 é apenas quando o fio ADDR está conectado com o GND do ADS!
 
 OneWire oneWire(ONE_WIRE_BUS); // Configuramos uma instancia de comunicação oneWire para os dispositivos que suportam esse tipo de comunicação
 DallasTemperature sensors(&oneWire); // Passa a referência oneWire para o sensor de temperatura Dallas
@@ -33,7 +35,10 @@ void setup() {
   Serial.println("Começar123");
 }
 
-/*
+/* 
+CONFIGURANDO A PRECISÃO DO ADS, NÃO APLIQUE NO ADS1115 VALORES MAIORES QUE O DEFINIDO POR "RANGE", ISSO IRÁ DANIFICAR O DISPOSITIVO!
+SE VOCÊ NÃO TEM CERTEZA DE QUAL É A TENSÃO (V) APLICADA NO RESISTOR QUE IRÁ LER, UTILIZE UM MULTIMETRO ANTES!
+
 | GAIN /  RANGE  | 
 |  0  / ±6.144V  | default
 |  1  / ±4.096V  |
@@ -43,12 +48,12 @@ void setup() {
 | 16  / ±0.256V  |
 */ 
 void loop() {
-  ADS.setGain(4);
+  ADS.setGain(4); // NO MÁXIMO ~1V!
 
   int16_t leitura_tensao_r1 = ADS.readADC(ANALOGICO_R1); 
   int16_t leitura_tensao_r2 = ADS.readADC(ANALOGICO_R2); 
   
-  double fator = ADS.toVoltage(1000); // mV
+  double fator = ADS.toVoltage(1000); // Usar a escala mV
 
   double tens1 = leitura_tensao_r1 * fator;
   double tens2 = leitura_tensao_r2 * fator;
@@ -63,17 +68,17 @@ void loop() {
 
 
   //Envia os dados separados por vírgulas
-  Serial.print(tens1, 4);
+  Serial.print(tens1, ARREDONDAMENTO);
   Serial.print(",");
-  Serial.print(Corrente_R1, 4);
+  Serial.print(Corrente_R1, ARREDONDAMENTO);
   Serial.print(",");
-  Serial.print(Potencia_R1, 4);
+  Serial.print(Potencia_R1, ARREDONDAMENTO);
   Serial.print(",");
-  Serial.print(tens2, 4);
+  Serial.print(tens2, ARREDONDAMENTO);
   Serial.print(",");
-  Serial.print(Corrente_R2, 4);
+  Serial.print(Corrente_R2, ARREDONDAMENTO);
   Serial.print(",");
-  Serial.print(Potencia_R2, 4);
+  Serial.print(Potencia_R2, ARREDONDAMENTO);
   Serial.print(",");
 
   sensors.requestTemperatures(); // A função sensors.requestTemperature emite uma temperatura global e faz o requirimento para todos os dispositivos na linha de transmissão
