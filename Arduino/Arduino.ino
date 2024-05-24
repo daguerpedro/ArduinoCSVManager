@@ -1,10 +1,12 @@
-#define ANALOGICO_R1 A0 //Pino analógico do ADS conectado com o resistor 1
-#define ANALOGICO_R2 A1 //Pino analógico do ADS conectado com o resistor 2
+// QUANDO USAR O ADS, INDICAR APENAS O NUMERO DA PORTA ANALÓGICA E NUNCA COM A SIGLA DE ANALOGICO:
+// COMO POR EXEMPLO A0, ..., A5
+#define ANALOGICO_R1 0 //Pino analógico do ADS conectado com o resistor 1
+#define ANALOGICO_R2 1 //Pino analógico do ADS conectado com o resistor 2
 
 #define RESISTOR1 10 //O valor em Ohms do resistor conectado com o ANALOGICO_R1 
 #define RESISTOR2 10 //O valor em Ohms do resistor conectado com o ANALOGICO_R2 
 
-#define ARREDONDAMENTO 4 //NUMERO DE CASAS DECIMAIS
+#define ARREDONDAMENTO 4 //NUMERO DE CASAS DECIMAIS, AO USAR POUCAS CASAS, A POTENCIA SERÁ ZERO 
 
 #define ONE_WIRE_BUS 7 //Pino digital conectado com o sensor de temperatura DS18B20
 
