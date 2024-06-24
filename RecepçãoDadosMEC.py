@@ -9,7 +9,7 @@ variaveis = ["DIA", "HORA", "mV (MEC1)", "mA (MEC1)", "mW (MEC1)", "mV (MEC2)", 
 
 table.alignmentDigits = 12 # Quantos digitos vamos alinhar a tabela no console
 
-comport = "COM3" # Altere para a porta desejada
+comport = "COM4" # Altere para a porta desejada
 baud = 9600 # Frequência desejada
 
 api = API(apiURL = 'http://localhost:8080/data/add')
@@ -18,8 +18,8 @@ fileManager = FileSaver(variaveis=variaveis)
 comunicacao = Coms(comport=comport, baud=baud)
 
 def aoReceber(dados):
-    #fileManager.saveToCSV(dados)
-    #table.addRow(dados)
+    fileManager.saveToCSV(dados)
+    table.addRow(dados)
     
     recebidos = dados
     recebidos.pop(0) # remover a data
@@ -40,7 +40,7 @@ def aoReceber(dados):
         pass
 
 def processarLinhasSalvas(linha):
-    #table.addRow(linha)
+    table.addRow(linha)
     pass
 
 def init():

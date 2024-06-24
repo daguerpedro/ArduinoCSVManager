@@ -8,7 +8,6 @@ class API:
     def post(self, dados):
         try:
             req = requests.post(self.url, json = dados)
-        except Exception as e:
-            print(f"[API] ${self.url} erro: ${e}")
+        except requests.ConnectionError as e:
             pass
         return req.status_code
