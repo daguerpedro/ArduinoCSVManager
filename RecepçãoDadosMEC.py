@@ -1,7 +1,7 @@
-import csv, os, time
-import serial
-
-from pytable import PyTable
+from utils.filesaver import *
+from utils.coms import *
+from utils.pytable import *
+from utils.API import *
 
 table = PyTable()
 
@@ -12,93 +12,46 @@ table.alignmentDigits = 12 # Quantos digitos vamos alinhar a tabela no console
 comport = "COM3" # Altere para a porta desejada
 baud = 9600 # Frequência desejada
 
+api = API(apiURL = 'http://localhost:8080/data/add')
 
-# Isso é uma função pois toda vez que for guardar algo na tabela, irá ler essa função que por vez separa as 
-# tabelas por dias, semanas ou meses (Ajustável via código), assim como imprime o cabeçalho nela caso ela ainda não exista.
-def arquivoCSV() -> str:
-    mes_ano = time.strftime("%m_%Y", time.localtime(time.time()))
-    semana = time.strftime("%W", time.localtime(time.time()))
- 
-    c = f'{mes_ano}_semana{semana}.csv' # Separar por dias.
-    if not os.path.exists(c):
-        try:
-            with open(c, 'a', newline='\n') as file: # Iremos adicionar algo na última linha, e não substiur o arquivo inteiro.
-                tabelacsv = csv.writer(file)
-                tabelacsv.writerow(variaveis)
-                file.close()          
-        except (Exception) as e:
-            print(f"[ERRO 5] Ocorreu um erro enquanto tentava salvar o cabeçalho na tabela nova: {c}!\n{e}\n")
-            pass
-    return c
- 
-def saveToCSV(data):
-    if(len(data) == 0):
-        return
+fileManager = FileSaver(variaveis=variaveis)
+comunicacao = Coms(comport=comport, baud=baud)
+
+def aoReceber(dados):
+    #fileManager.saveToCSV(dados)
+    #table.addRow(dados)
+    
+    recebidos = dados
+    recebidos.pop(0) # remover a data
+
     try:
-        with open(arquivoCSV(), 'a', newline='\n') as file: # Iremos adicionar algo na última linha, e não substiur o arquivo inteiro.
-            tabelacsv = csv.writer(file)
-            if not file.closed:
-                tabelacsv.writerow(data)
-                file.close()
-            else:
-                print("[AVISO]\nO arquivo estava fechado enquanto tentei salvar dados!\n")
- 
-    except (Exception) as e:
-        print(f"[ERRO 4] Ocorreu um erro enquanto tentava salvar a tabela!\nDado a ser salvo: \"{data}\" \nErro: {e}\n")
+        res = api.post({
+        "hora": str(dados[0]), 
+        "tensao1": str(dados[1]), 
+        "corrente1": str(dados[2]), 
+        "potencia1": str(dados[3]), 
+        "tensao2": str(dados[4]), 
+        "corrente2": str(dados[5]), 
+        "potencia2": str(dados[6]), 
+        "temperatura": str(dados[7])
+        })
+
+    except:
         pass
- 
-def loadCSV():
-    try:
-        with open(arquivoCSV(), 'r', newline='\n') as file:
-            tabelacsv = csv.reader(file)
- 
-            for linha in tabelacsv:
-                table.addRow(linha)
- 
-            file.close()
-    except (Exception) as e:
-        print(f"[ERRO 3] Ocorreu um erro enquanto tentava carregar a tabela que já existia!\n{e}\n")
-        pass
- 
-def listenCOMPORT():
-    try:
-        ser = serial.Serial(comport, baud, timeout=None)
-    except serial.SerialException as e:
-        print(f"[ERRO 1] Erro ao abrir a porta serial: {e}")
-        return
- 
-    while True:
-        try:
-            handshake = ser.readline().decode().strip()
- 
-            if handshake.lower() == "Começar123".lower():
-                print("[INFO] Iniciando recebimento de dados.")
-                break
-        except UnicodeDecodeError:
-            pass
- 
-    loadCSV()
- 
-    try:
-        while True:
-            # Recebe e processa os dados
-            dados = ser.readline().decode().strip().split(',')
-            if(not dados[0] == ''):
-                dados.insert(0, time.strftime("%H:%M:%S", time.localtime(time.time())))
-                dados.insert(0, time.strftime("%d/%m/%Y", time.localtime(time.time())))
- 
-                saveToCSV(dados)
-                table.addRow(dados)
- 
-    except Exception as e:
-        print(f"[ERRO 2] Erro de comunicação: {e}")
-        pass
-    finally:
-        ser.close()
- 
+
+def processarLinhasSalvas(linha):
+    #table.addRow(linha)
+    pass
+
 def init():
     try:
-        listenCOMPORT()
+        if comunicacao.openPort():
+            comunicacao.handShake()
+
+            fileManager.loadCSV(lineCallBack=processarLinhasSalvas)
+
+            comunicacao.process(aoReceber=aoReceber)
+
     except KeyboardInterrupt:
         print("\nPrograma finalizado.")
  
