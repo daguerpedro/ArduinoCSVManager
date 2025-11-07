@@ -1,3 +1,8 @@
+# Sobre ArduinoCSVManager
+O projeto tem como objetivo se comunicar com um Arduino/ESP; receber, armazenar e publicar dados recebidos do Arduino/ESP.  
+A comunicação implementada neste projeto é via Serial e os dados são enviados no formato CSV.   
+É possível utilizar outros protocolos, por exemplo: para um projeto de PI2 o código foi modificado para comunicação remota (via Wifi).   
+
 # Pré-requisitos	
 Pré-requisitos
 Python (https://www.python.org/downloads/) versão ≥ 3.12.5.   
